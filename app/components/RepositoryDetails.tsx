@@ -4,33 +4,13 @@ import { readFile } from 'fs';
 import { shell } from 'electron';
 import { parseISO, format, differenceInDays } from 'date-fns';
 import { Repository } from '../types/dump';
-
-function splitOnNewLine(text: string): string[] {
-  return text.split('\n');
-}
-
-function getListData(text: string): string[] {
-  return splitOnNewLine(text).filter(x => x);
-}
-
-function takeFirstStdOutputResponse(text: string): string {
-  return splitOnNewLine(text)[0];
-}
-
-function executeCommand<T>(
-  path: string,
-  command: string,
-  process: (res: string) => T
-): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    exec(`cd ${path} && ${command}`, (err, stdout, stderr) => {
-      if (err) reject(err);
-      if (stderr) reject(stderr);
-      const processed = process(stdout);
-      resolve(processed);
-    });
-  });
-}
+import config from '../config';
+import {
+  executeCommand,
+  getListData,
+  takeFirstStdOutputResponse
+} from '../utils/utils';
+import GitInspectorDetails from './GitInspectorDetails';
 
 async function loadRepositoryStatistics(path: string): Promise<Repository> {
   const base: Repository = {
@@ -80,6 +60,7 @@ async function loadRepositoryStatistics(path: string): Promise<Repository> {
   base.firstCommit = firstCommit;
   base.lastCommit = lastCommit;
   base.readme = readme;
+
   return base;
 }
 
@@ -108,7 +89,9 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
   };
   return (
     <>
-      <h1>{repository?.name}</h1>
+      <p>
+        <strong>{repository?.name}</strong>
+      </p>
       <p>{repository?.path}</p>
       <p>
         <button
@@ -116,17 +99,17 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
           type="button"
           onClick={openRepositoryFolder}
         >
-          Open Folder
+          <i className="fa fa-folder" />
         </button>
         <button
           className="btn btn-secondary btn-sm"
           type="button"
           onClick={openRepositoryShell}
         >
-          Open Shell
+          <i className="fa fa-terminal" />
         </button>
       </p>
-      <table className="table table-condensed">
+      <table className="table table-sm">
         <thead>
           <tr>
             <th>Stat</th>
@@ -172,20 +155,36 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
         </tbody>
       </table>
 
-      <h2>Remotes</h2>
+      <hr />
+      <p>
+        <strong>Remotes</strong>
+      </p>
       <ul>
         {repository?.remotes.map(r => (
           <li key={r}>{r}</li>
         ))}
       </ul>
-      <h2>Branches</h2>
+
+      <hr />
+      <p>
+        <strong>Branches</strong>
+      </p>
       <ul>
         {repository?.branches.map(r => (
           <li key={r}>{r}</li>
         ))}
       </ul>
-      <h2>Readme</h2>
-      <pre>{repository?.readme}</pre>
+
+      <hr />
+      <p>
+        <strong>Readme</strong>
+      </p>
+      <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+        {repository?.readme}
+      </pre>
+
+      <hr />
+      <GitInspectorDetails path={repository?.path} />
     </>
   );
 };

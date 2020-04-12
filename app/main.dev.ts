@@ -11,8 +11,10 @@
 import path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { mkdir, readdir, unlink } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
+import config from './config';
 
 export default class AppUpdater {
   constructor() {
@@ -56,8 +58,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1400,
+    height: 800,
     webPreferences:
       process.env.NODE_ENV === 'development' || process.env.E2E_BUILD === 'true'
         ? {
@@ -82,6 +84,19 @@ const createWindow = async () => {
       mainWindow.show();
       mainWindow.focus();
     }
+
+    mkdir(config.tempDirectoryPath, err => {
+      if (err?.code !== 'EEXIST') throw err;
+
+      readdir(config.tempDirectoryPath, (err2, files) => {
+        if (err2) throw err;
+        files.map(file =>
+          unlink(path.join(config.tempDirectoryPath, file), err3 => {
+            if (err3) throw err3;
+          })
+        );
+      });
+    });
   });
 
   mainWindow.on('closed', () => {

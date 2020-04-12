@@ -22,7 +22,7 @@ const Home = () => {
   return (
     <div className="container-fluid">
       <div className="row">
-        <div className="col-2">
+        <div className="col-3">
           <h2>Repositories</h2>
           {repositories.map(x => (
             <div
@@ -31,12 +31,16 @@ const Home = () => {
               onKeyPress={undefined}
               role="button"
               tabIndex={-1}
+              style={{ cursor: 'pointer' }}
             >
-              <p>{x}</p>
+              <p>
+                <i className="fa fa-folder" style={{ marginRight: '5px' }} />
+                <small>{x}</small>
+              </p>
             </div>
           ))}
         </div>
-        <div className="col-10">
+        <div className="col-9">
           <RepositoryDetails path={selectedRepositoryPath} />
         </div>
       </div>
