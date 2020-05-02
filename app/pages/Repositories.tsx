@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { readdir } from 'fs';
-import { join } from 'path';
-import { Link } from 'react-router-dom';
-import routes from '../constants/routes.json';
+import { useHistory } from 'react-router-dom';
 import config from '../config';
-import RepositoryDetails from './RepositoryDetails';
+import { RepositoryLocation } from '../types/repositories';
+import { buildRepositoryLocationFromPath } from '../utils/utils';
 
-const Home = () => {
-  const [repositories, setRepositories] = useState<string[]>([]);
-  const [selectedRepositoryPath, setSelectedRepositoryPath] = useState<
-    string
-  >();
+const Repositories = () => {
+  const [repositories, setRepositories] = useState<RepositoryLocation[]>([]);
+  const history = useHistory();
 
   useEffect(() => {
     readdir(config.repositoriesPath, (err, paths) => {
       if (err) throw err;
-      setRepositories(paths.map(x => join(config.repositoriesPath, x)));
+      const repos = paths.map(buildRepositoryLocationFromPath);
+      setRepositories(repos);
     });
   }, [config]);
 
@@ -26,8 +24,8 @@ const Home = () => {
           <h2>Repositories</h2>
           {repositories.map(x => (
             <div
-              key={x}
-              onClick={() => setSelectedRepositoryPath(x)}
+              key={x.path}
+              onClick={() => history.push(`/repositories/${x.name}`)}
               onKeyPress={undefined}
               role="button"
               tabIndex={-1}
@@ -35,17 +33,17 @@ const Home = () => {
             >
               <p>
                 <i className="fa fa-folder" style={{ marginRight: '5px' }} />
-                <small>{x}</small>
+                <small>{x.name}</small>
               </p>
             </div>
           ))}
         </div>
         <div className="col-9">
-          <RepositoryDetails path={selectedRepositoryPath} />
+          <p>Select a repository ...</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Home;
+export default Repositories;

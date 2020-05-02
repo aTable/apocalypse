@@ -1,12 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState, useEffect } from 'react';
-import { exec } from 'child_process';
-import { readFile } from 'fs';
-import { shell } from 'electron';
-import { parseISO, format, differenceInDays } from 'date-fns';
-import config from '../config';
 import { executePythonCommand } from '../utils/utils';
-
+import config from '../config';
 export interface GitInspectorDetailsProps {
   path: string | undefined;
 }

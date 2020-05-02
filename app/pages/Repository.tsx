@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { exec } from 'child_process';
 import { readFile } from 'fs';
 import { shell } from 'electron';
+import { RouteComponentProps } from 'react-router-dom';
 import { parseISO, format, differenceInDays } from 'date-fns';
 import { Repository } from '../types/dump';
-
 import {
   executeCommand,
   getListData,
-  takeFirstStdOutputResponse
+  takeFirstStdOutputResponse,
+  buildRepositoryLocationFromName
 } from '../utils/utils';
-import GitInspectorDetails from './GitInspectorDetails';
+import GitInspectorDetails from '../components/GitInspectorDetails';
 
 async function loadRepositoryStatistics(path: string): Promise<Repository> {
   const base: Repository = {
@@ -64,16 +65,18 @@ async function loadRepositoryStatistics(path: string): Promise<Repository> {
   return base;
 }
 
-export interface RepositoryStatisticsProps {
-  path: string | undefined;
+export interface RepositoryPageProps {
+  id: string;
 }
 
-const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
+const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   const [repository, setRepository] = useState<Repository>();
 
   useEffect(() => {
-    if (!props.path) return;
-    const _ = loadRepositoryStatistics(props.path).then(repo => {
+    if (!props.match.params.id) return;
+    const _ = loadRepositoryStatistics(
+      buildRepositoryLocationFromName(props.match.params.id).path
+    ).then(repo => {
       setRepository(repo);
       return repo;
     });
@@ -189,4 +192,4 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
   );
 };
 
-export default RepositoryStatistics;
+export default RepositoryPage;

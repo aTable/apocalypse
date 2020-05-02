@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 import { join } from 'path';
-import { mkdir } from 'fs';
 import config from '../config';
+import { RepositoryLocation } from '../types/repositories';
 
 export function splitOnNewLine(text: string): string[] {
   return text.split('\n');
@@ -52,4 +52,23 @@ export function executePythonCommand<T>(
 
 export function generateTempFilePath(): string {
   return join(config.tempDirectoryPath, Math.random().toString());
+}
+
+export function buildRepositoryLocationFromName(
+  repositoryName: string
+): RepositoryLocation {
+  return {
+    path: join(config.repositoriesPath, repositoryName),
+    name: repositoryName
+  };
+}
+
+export function buildRepositoryLocationFromPath(
+  repositoryPath: string
+): RepositoryLocation {
+  const fragments = repositoryPath.split('/');
+  return {
+    path: join(config.repositoriesPath, repositoryPath),
+    name: fragments[fragments.length - 1]
+  };
 }

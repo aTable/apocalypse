@@ -274,6 +274,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@hot-loader/react-dom": "^16.13.0",
+    "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
     "connected-react-router": "^6.6.1",
     "core-js": "^3.6.4",
