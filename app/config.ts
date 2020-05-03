@@ -14,7 +14,7 @@ export const defaults: Config = {
   rootPath: `${process.env.HOME}/.apocalypse`,
   configPath: `${process.env.HOME}/.apocalypse/config.json`,
   repositoriesPath: `${process.env.HOME}/repos`,
-  gitinspectorPath: `${process.env.HOME}/apocalypse/node_modules/gitinspector/gitinspector.py`,
+  gitinspectorPath: `${process.env.HOME}/repos/apocalypse/node_modules/gitinspector/gitinspector.py`,
   tempDirectoryPath: `/tmp/apocalypse`,
   serverUri: 'https://localhost'
 };

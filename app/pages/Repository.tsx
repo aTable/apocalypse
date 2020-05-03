@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { exec } from 'child_process';
 import { readFile } from 'fs';
 import { shell } from 'electron';
-import { RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps, useHistory } from 'react-router-dom';
 import { parseISO, format, differenceInDays } from 'date-fns';
 import { Repository } from '../types/dump';
 import {
@@ -71,7 +71,7 @@ export interface RepositoryPageProps {
 
 const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   const [repository, setRepository] = useState<Repository>();
-
+  const history = useHistory();
   useEffect(() => {
     if (!props.match.params.id) return;
     const _ = loadRepositoryStatistics(
@@ -90,6 +90,9 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
     if (!repository) return;
     exec(`gnome-terminal -e "bash -c "!!; exec bash""`);
   };
+  const goToRepositoryChanges = () =>
+    history.push(`/repositories/${repository?.name}/changes`);
+
   return (
     <>
       <p>
@@ -110,6 +113,13 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
           onClick={openRepositoryShell}
         >
           <i className="fa fa-terminal" />
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          onClick={goToRepositoryChanges}
+        >
+          <i className="fa fa-list" />
         </button>
       </p>
       <table className="table table-sm">

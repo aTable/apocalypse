@@ -6,7 +6,7 @@ export interface NavBarProps {}
 const NavBar: FC<NavBarProps> = () => {
   return (
     <nav className="navbar navbar-expand-sm navbar-light bg-light">
-      <Link className="navbar-brand" to="/">
+      <Link className="navbar-brand" to="/repositories">
         Apocalypse
       </Link>
       <button
@@ -23,7 +23,7 @@ const NavBar: FC<NavBarProps> = () => {
 
       <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
         <ul className="navbar-nav mr-auto mt-2 mt-lg-0">
-          <NavItem to="/">Home</NavItem>
+          {/* <NavItem to="/">Home</NavItem> */}
           <NavItem to="/repositories">Repositories</NavItem>
         </ul>
       </div>

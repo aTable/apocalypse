@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { executePythonCommand } from '../utils/utils';
 import config from '../config';
+
 export interface GitInspectorDetailsProps {
   path: string | undefined;
 }
@@ -37,12 +38,12 @@ const GitInspectorDetails = (props: GitInspectorDetailsProps) => {
   useEffect(() => {
     if (!props.path) return;
 
-    executePythonCommand(
-      `${config.gitinspectorPath} --grading --format ${mode} ${props.path}`,
-      process => {
-        setStatistic(process);
-      }
-    );
+    // executePythonCommand(
+    //   `${config.gitinspectorPath} --grading --format ${mode} ${props.path}`,
+    //   process => {
+    //     setStatistic(process);
+    //   }
+    // );
   }, [props, mode]);
 
   const inspectorModeDomId = 'gitinspector-mode';
