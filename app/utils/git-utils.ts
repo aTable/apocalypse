@@ -4,12 +4,17 @@ import { executeCommand, executeCommandRaw } from './utils';
 
 export async function gitCommit(
   repo: RepositoryLocation,
-  message: string
+  message: string,
+  isVerifyCommit: boolean
 ): Promise<string> {
   return new Promise(resolve => {
-    executeCommand(repo.path, `git commit -m "${message}"`, res => {
-      resolve(res);
-    });
+    executeCommand(
+      repo.path,
+      `git commit -m "${message}" ${isVerifyCommit ? '' : '--no-verify'}`,
+      res => {
+        resolve(res);
+      }
+    );
   });
 }
 

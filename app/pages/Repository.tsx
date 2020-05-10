@@ -138,6 +138,17 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
           <i className="fa fa-history" />
         </button>
       </p>
+
+      <p>
+        // TODO: insert line chart on repo commits over time, pie chart on
+        contributions
+      </p>
+      <p>
+        // TODO: repository suggestions: missing
+        <a href="https://gitignore.io">.gitignore</a>, .editorconfig, linting,
+        ...
+      </p>
+
       <table className="table table-sm">
         <thead>
           <tr>

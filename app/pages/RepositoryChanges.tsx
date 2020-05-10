@@ -27,6 +27,7 @@ const RepositoryChangesPage = (
     config.linesForContext
   );
   const [commitMessage, setCommitMessage] = useState('');
+  const [isVerifyCommit, setIsVerifyCommit] = useState(true);
 
   const repositoryLocation = useMemo<RepositoryLocation>(
     () => buildRepositoryLocationFromName(props.match.params.id),
@@ -62,7 +63,7 @@ const RepositoryChangesPage = (
   };
 
   const commit = () => {
-    gitCommit(repositoryLocation, commitMessage)
+    gitCommit(repositoryLocation, commitMessage, isVerifyCommit)
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
       .catch(console.warn);
@@ -125,6 +126,15 @@ const RepositoryChangesPage = (
 
           <hr />
           <h2>Commit</h2>
+          <label htmlFor="verify-commit">
+            <input
+              id="verify-commit"
+              type="checkbox"
+              checked={isVerifyCommit}
+              onChange={() => setIsVerifyCommit(!isVerifyCommit)}
+            />
+            Verify
+          </label>
           <textarea
             className="form-control"
             value={commitMessage}
