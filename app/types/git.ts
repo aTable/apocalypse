@@ -1,4 +1,4 @@
-export interface GitStatusFiles {
+export interface GitStatusFile {
   path: string;
   xy: [XY, XY];
 }

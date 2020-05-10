@@ -1,16 +1,19 @@
 import { RepositoryLocation } from '../types/repositories';
-import { GitStatusFiles, XY, FileDiff, FileDiffHunk } from '../types/git';
+import { GitStatusFile, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
 export async function gitCommit(
   repo: RepositoryLocation,
   message: string,
+  isAmendCommit: boolean,
   isVerifyCommit: boolean
 ): Promise<string> {
   return new Promise(resolve => {
     executeCommand(
       repo.path,
-      `git commit -m "${message}" ${isVerifyCommit ? '' : '--no-verify'}`,
+      `git commit -m "${message}" ${isAmendCommit ? '--amend ' : ''} ${
+        isVerifyCommit ? '' : '--no-verify'
+      }`,
       res => {
         resolve(res);
       }
@@ -31,15 +34,14 @@ export async function getRepositoryHistory(
 
 export async function getGitStatus(
   repo: RepositoryLocation
-): Promise<GitStatusFiles[]> {
+): Promise<GitStatusFile[]> {
   return new Promise(resolve => {
     executeCommand(repo.path, 'git status -s', res => {
-      // "?? path/to/filename.tsx"
       const mapped = res
         .split('\n')
         .filter(x => x)
-        .map<GitStatusFiles>(change => {
-          const gitStatus: GitStatusFiles = {
+        .map<GitStatusFile>(change => {
+          const gitStatus: GitStatusFile = {
             xy: [
               XY[change[0] as keyof typeof XY],
               XY[change[1] as keyof typeof XY]
@@ -55,11 +57,14 @@ export async function getGitStatus(
 
 export async function getFileDiff(
   path: string,
-  linesForContext: number
+  linesForContext: number,
+  isStaged: boolean
 ): Promise<FileDiff> {
   return new Promise(resolve => {
     executeCommandRaw(
-      `git diff HEAD --unified=${linesForContext} ${path}`,
+      `git diff --unified=${linesForContext} ${
+        isStaged ? '--cached' : ''
+      } ${path}`,
       res => {
         const metadataStartText = '@@ -';
         const metadataEndText = ' @@';
@@ -113,4 +118,13 @@ export async function stageAllChanges(): Promise<string> {
     });
   });
 }
+
+export function isFileStaged(status: GitStatusFile): boolean {
+  return status.xy[0] !== XY[' '] && status.xy[0] !== undefined;
+}
+
+export function isFileUnstaged(status: GitStatusFile): boolean {
+  return status.xy[1] !== XY[' '];
+}
+
 export default {};

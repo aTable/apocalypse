@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { buildRepositoryLocationFromName } from '../utils/utils';
-import { GitStatusFiles, XY, FileDiff } from '../types/git';
+import { GitStatusFile, XY, FileDiff } from '../types/git';
 import {
   getGitStatus,
   getFileDiff,
   stageFile,
   stageAllChanges,
-  gitCommit
+  gitCommit,
+  isFileStaged,
+  isFileUnstaged
 } from '../utils/git-utils';
 import { RepositoryLocation } from '../types/repositories';
 import config from '../config';
@@ -17,16 +19,23 @@ export interface RepositoryChangesPageProps {
   id: string;
 }
 
+enum FileMode {
+  unstaged = 'unstaged',
+  staged = 'staged'
+}
+
 const RepositoryChangesPage = (
   props: RouteComponentProps<RepositoryChangesPageProps>
 ) => {
-  const [gitStatus, setGitStatus] = useState<GitStatusFiles[]>();
-  const [selectedFilePath, setSelectedFilePath] = useState<string>();
+  const [gitStatus, setGitStatus] = useState<GitStatusFile[]>();
+  const [selectedFile, setSelectedFile] = useState<GitStatusFile>();
+  const [mode, setMode] = useState<FileMode>();
   const [diff, setDiff] = useState<FileDiff>();
   const [linesForContext, setLinesForContext] = useState<number>(
     config.linesForContext
   );
   const [commitMessage, setCommitMessage] = useState('');
+  const [isAmendCommit, setIsAmendCommit] = useState(false);
   const [isVerifyCommit, setIsVerifyCommit] = useState(true);
 
   const repositoryLocation = useMemo<RepositoryLocation>(
@@ -42,15 +51,15 @@ const RepositoryChangesPage = (
   }, [props]);
 
   useEffect(() => {
-    if (!selectedFilePath) return;
-    getFileDiff(selectedFilePath, linesForContext)
+    if (!selectedFile) return;
+    getFileDiff(selectedFile.path, linesForContext, mode === FileMode.staged)
       .then(setDiff)
       .catch(console.warn);
-  }, [selectedFilePath, linesForContext]);
+  }, [selectedFile, linesForContext, mode]);
 
   const stageFileChanges = () => {
-    if (!selectedFilePath) return;
-    stageFile(selectedFilePath)
+    if (!selectedFile) return;
+    stageFile(selectedFile.path)
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
       .catch(console.warn);
@@ -63,10 +72,15 @@ const RepositoryChangesPage = (
   };
 
   const commit = () => {
-    gitCommit(repositoryLocation, commitMessage, isVerifyCommit)
+    gitCommit(repositoryLocation, commitMessage, isAmendCommit, isVerifyCommit)
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
       .catch(console.warn);
+  };
+
+  const fileClicked = (file: GitStatusFile, fileMode: FileMode) => {
+    setSelectedFile(file);
+    setMode(fileMode);
   };
 
   return (
@@ -95,13 +109,14 @@ const RepositoryChangesPage = (
               </tr>
             </thead>
             <tbody>
-              {gitStatus
-                ?.filter(x => x.xy[1] !== XY[' '])
-                .map(x => (
-                  <tr key={x.path} onClick={() => setSelectedFilePath(x.path)}>
-                    <td>{x.path}</td>
-                  </tr>
-                ))}
+              {gitStatus?.filter(isFileUnstaged).map(x => (
+                <tr
+                  key={x.path}
+                  onClick={() => fileClicked(x, FileMode.unstaged)}
+                >
+                  <td>{x.path}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <hr />
@@ -114,18 +129,28 @@ const RepositoryChangesPage = (
               </tr>
             </thead>
             <tbody>
-              {gitStatus
-                ?.filter(x => x.xy[0] !== XY[' '] && x.xy[0] !== undefined)
-                .map(x => (
-                  <tr key={x.path} onClick={() => setSelectedFilePath(x.path)}>
-                    <td>{x.path}</td>
-                  </tr>
-                ))}
+              {gitStatus?.filter(isFileStaged).map(x => (
+                <tr
+                  key={x.path}
+                  onClick={() => fileClicked(x, FileMode.staged)}
+                >
+                  <td>{x.path}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
           <hr />
           <h2>Commit</h2>
+          <label htmlFor="amend-commit">
+            <input
+              id="amend-commit"
+              type="checkbox"
+              checked={isAmendCommit}
+              onChange={() => setIsAmendCommit(!isAmendCommit)}
+            />
+            Amend
+          </label>
           <label htmlFor="verify-commit">
             <input
               id="verify-commit"
@@ -158,7 +183,7 @@ const RepositoryChangesPage = (
           />
 
           <div>
-            {!selectedFilePath || !diff ? (
+            {!selectedFile || !diff ? (
               <p>Select a file</p>
             ) : (
               <div>
