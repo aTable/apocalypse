@@ -92,6 +92,8 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   };
   const goToRepositoryChanges = () =>
     history.push(`/repositories/${repository?.name}/changes`);
+  const goToRepositoryHistory = () =>
+    history.push(`/repositories/${repository?.name}/history`);
 
   return (
     <>
@@ -120,6 +122,13 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
           onClick={goToRepositoryChanges}
         >
           <i className="fa fa-list" />
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          onClick={goToRepositoryHistory}
+        >
+          <i className="fa fa-history" />
         </button>
       </p>
       <table className="table table-sm">

@@ -2,7 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { buildRepositoryLocationFromName } from '../utils/utils';
 import { GitStatusFiles, XY } from '../types/git';
-import { getGitStatus, getFileDiff, stageFile } from '../utils/git-utils';
+import {
+  getGitStatus,
+  getFileDiff,
+  stageFile,
+  stageAllChanges
+} from '../utils/git-utils';
 import { RepositoryLocation } from '../types/repositories';
 
 export interface RepositoryChangesPageProps {
@@ -39,17 +44,27 @@ const RepositoryChangesPage = (
     if (!selectedFilePath) return;
     stageFile(selectedFilePath);
   };
+  const stageAllFileChanges = () => {
+    stageAllChanges();
+  };
 
   return (
-    <>
+    <div className="" style={{ display: 'flex' }}>
       <div className="row">
-        <div className="col-12">
+        <div className="">
           <button
             type="button"
             className="btn btn-secondary"
             onClick={stageFileChanges}
           >
             Stage
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={stageAllFileChanges}
+          >
+            Stage All
           </button>
         </div>
         <div className="col-3">
@@ -58,16 +73,14 @@ const RepositoryChangesPage = (
             <thead>
               <tr>
                 <th>Path</th>
-                <th>Mode</th>
               </tr>
             </thead>
             <tbody>
               {gitStatus
-                ?.filter(x => x.xy[1])
+                ?.filter(x => x.xy[1] !== XY[' '])
                 .map(x => (
                   <tr key={x.path} onClick={() => setSelectedFilePath(x.path)}>
                     <td>{x.path}</td>
-                    <td>{x.xy}</td>
                   </tr>
                 ))}
             </tbody>
@@ -78,16 +91,14 @@ const RepositoryChangesPage = (
             <thead>
               <tr>
                 <th>Path</th>
-                <th>Mode</th>
               </tr>
             </thead>
             <tbody>
               {gitStatus
-                ?.filter(x => x.xy[0])
+                ?.filter(x => x.xy[0] !== XY[' '])
                 .map(x => (
                   <tr key={x.path} onClick={() => setSelectedFilePath(x.path)}>
                     <td>{x.path}</td>
-                    <td>{x.xy}</td>
                   </tr>
                 ))}
             </tbody>
@@ -103,7 +114,7 @@ const RepositoryChangesPage = (
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

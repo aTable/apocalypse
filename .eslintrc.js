@@ -4,7 +4,9 @@ module.exports = {
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
     'import/no-named-as-default': 'off',
-    '@typescript-eslint/no-empty-interface': 'off'
+    '@typescript-eslint/no-empty-interface': 'off',
+    'react/destructuring-assignment': 'off',
+    'no-console': 'off'
   },
   settings: {
     'import/resolver': {

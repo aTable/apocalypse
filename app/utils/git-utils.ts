@@ -2,6 +2,16 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFiles, XY } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function getRepositoryHistory(
+  repo: RepositoryLocation
+): Promise<string[]> {
+  return new Promise(resolve => {
+    executeCommand(repo.path, 'git log --oneline', res => {
+      const mapped = res.split('\n').filter(x => x);
+      resolve(mapped);
+    });
+  });
+}
 export async function getGitStatus(
   repo: RepositoryLocation
 ): Promise<GitStatusFiles[]> {
@@ -42,4 +52,11 @@ export async function stageFile(path: string): Promise<string> {
   });
 }
 
+export async function stageAllChanges(): Promise<string> {
+  return new Promise(resolve => {
+    executeCommandRaw(`git add -A`, res => {
+      resolve(res);
+    });
+  });
+}
 export default {};
