@@ -27,5 +27,5 @@
     "yarn.lock": true,
     "*.{css,sass,scss}.d.ts": true
   },
-  "cSpell.words": ["oneline"]
+  "cSpell.words": ["gitinspector", "oneline"]
 }

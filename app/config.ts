@@ -1,22 +1,24 @@
 import { readFile, writeFile, mkdir } from 'fs';
 
 export interface Config {
-  [key: string]: string;
+  [key: string]: string | number;
   rootPath: string;
   configPath: string;
   repositoriesPath: string;
-  gitinspectorPath: string;
+  gitInspectorPath: string;
   tempDirectoryPath: string;
   serverUri: string;
+  linesForContext: number;
 }
 
 export const defaults: Config = {
   rootPath: `${process.env.HOME}/.apocalypse`,
   configPath: `${process.env.HOME}/.apocalypse/config.json`,
   repositoriesPath: `${process.env.HOME}/repos`,
-  gitinspectorPath: `${process.env.HOME}/repos/apocalypse/node_modules/gitinspector/gitinspector.py`,
+  gitInspectorPath: `${process.env.HOME}/repos/apocalypse/node_modules/gitinspector/gitinspector.py`,
   tempDirectoryPath: `/tmp/apocalypse`,
-  serverUri: 'https://localhost'
+  serverUri: 'https://localhost',
+  linesForContext: 5
 };
 
 // NOTE: manipulate and mutate for some reason i want this available statically instead of loaded via context

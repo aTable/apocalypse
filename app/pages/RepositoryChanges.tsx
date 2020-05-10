@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { buildRepositoryLocationFromName } from '../utils/utils';
-import { GitStatusFiles, XY } from '../types/git';
+import { GitStatusFiles, XY, FileDiff } from '../types/git';
 import {
   getGitStatus,
   getFileDiff,
@@ -9,6 +9,8 @@ import {
   stageAllChanges
 } from '../utils/git-utils';
 import { RepositoryLocation } from '../types/repositories';
+import config from '../config';
+import GitDiffHunk from '../components/GitDiffHunk';
 
 export interface RepositoryChangesPageProps {
   id: string;
@@ -19,7 +21,10 @@ const RepositoryChangesPage = (
 ) => {
   const [gitStatus, setGitStatus] = useState<GitStatusFiles[]>();
   const [selectedFilePath, setSelectedFilePath] = useState<string>();
-  const [diff, setDiff] = useState<string>();
+  const [diff, setDiff] = useState<FileDiff>();
+  const [linesForContext, setLinesForContext] = useState<number>(
+    config.linesForContext
+  );
 
   const repositoryLocation = useMemo<RepositoryLocation>(
     () => buildRepositoryLocationFromName(props.match.params.id),
@@ -35,10 +40,10 @@ const RepositoryChangesPage = (
 
   useEffect(() => {
     if (!selectedFilePath) return;
-    getFileDiff(selectedFilePath)
+    getFileDiff(selectedFilePath, linesForContext)
       .then(setDiff)
       .catch(console.warn);
-  }, [selectedFilePath]);
+  }, [selectedFilePath, linesForContext]);
 
   const stageFileChanges = () => {
     if (!selectedFilePath) return;
@@ -49,26 +54,24 @@ const RepositoryChangesPage = (
   };
 
   return (
-    <div className="" style={{ display: 'flex' }}>
+    <div className="container-fluid">
       <div className="row">
-        <div className="">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={stageFileChanges}
-          >
-            Stage
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={stageAllFileChanges}
-          >
-            Stage All
-          </button>
+        <div className="col-2" style={{ flexGrow: 1 }}>
+          <h1>Navbar</h1>
         </div>
-        <div className="col-3">
-          <h2>Unstaged</h2>
+
+        <div className="col-5">
+          <h2>
+            Unstaged
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              style={{ float: 'right' }}
+              onClick={stageAllChanges}
+            >
+              Stage All
+            </button>
+          </h2>
           <table className="table table-sm">
             <thead>
               <tr>
@@ -85,6 +88,7 @@ const RepositoryChangesPage = (
                 ))}
             </tbody>
           </table>
+          <hr />
 
           <h2>Staged</h2>
           <table className="table table-sm">
@@ -104,14 +108,37 @@ const RepositoryChangesPage = (
             </tbody>
           </table>
         </div>
-        <div className="col-9">
-          {!selectedFilePath || !diff ? (
-            <p>Select a file</p>
-          ) : (
-            <div>
-              <pre>{diff}</pre>
-            </div>
-          )}
+        <div className="col-5">
+          <input
+            type="number"
+            value={linesForContext}
+            onChange={e => setLinesForContext(e.target.valueAsNumber)}
+          />
+
+          <div>
+            {!selectedFilePath || !diff ? (
+              <p>Select a file</p>
+            ) : (
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={stageFileChanges}
+                >
+                  Stage All
+                </button>
+
+                {diff.hunks.map(x => (
+                  <GitDiffHunk
+                    key={x.metadata}
+                    hunk={x}
+                    stage={null}
+                    discard={null}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

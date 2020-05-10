@@ -6,7 +6,9 @@ module.exports = {
     'import/no-named-as-default': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
     'react/destructuring-assignment': 'off',
-    'no-console': 'off'
+    'no-console': 'off',
+    'no-plusplus': 'off',
+    'no-continue': 'off'
   },
   settings: {
     'import/resolver': {

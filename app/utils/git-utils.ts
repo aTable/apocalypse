@@ -1,5 +1,5 @@
 import { RepositoryLocation } from '../types/repositories';
-import { GitStatusFiles, XY } from '../types/git';
+import { GitStatusFiles, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
 export async function getRepositoryHistory(
@@ -36,11 +36,48 @@ export async function getGitStatus(
   });
 }
 
-export async function getFileDiff(path: string): Promise<string> {
+export async function getFileDiff(
+  path: string,
+  linesForContext: number
+): Promise<FileDiff> {
   return new Promise(resolve => {
-    executeCommandRaw(`git diff --cached ${path}`, res => {
-      resolve(res);
-    });
+    executeCommandRaw(
+      `git diff HEAD --unified=${linesForContext} ${path}`,
+      res => {
+        const metadataStartText = '@@ -';
+        const metadataEndText = ' @@';
+        const [command, mode, a, b, ...rest] = res.split('\n');
+        const hunks: FileDiffHunk[] = [];
+        for (let i = 0; i < rest.length; i++) {
+          // extract metadata and line in hunk
+          if (rest[i].startsWith(metadataStartText)) {
+            const metadataLastIndex = rest[i].lastIndexOf(metadataEndText);
+            hunks.push({
+              metadata: rest[i].substring(
+                0,
+                metadataLastIndex + metadataEndText.length
+              ),
+              hunk: ''
+            });
+            hunks[hunks.length - 1].hunk = `${rest[i].substring(
+              metadataLastIndex + metadataEndText.length
+            )}\n`;
+            continue;
+          }
+          // extract hunk (no metadata)
+          hunks[hunks.length - 1].hunk += `${rest[i]}\n`;
+        }
+
+        const result: FileDiff = {
+          command,
+          mode,
+          a,
+          b,
+          hunks
+        };
+        return resolve(result);
+      }
+    );
   });
 }
 

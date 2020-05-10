@@ -13,3 +13,16 @@ export enum XY {
   C = 'copied',
   U = 'updated but unmerged'
 }
+
+export interface FileDiff {
+  command: string;
+  mode: string;
+  a: string;
+  b: string;
+  hunks: FileDiffHunk[];
+}
+
+export interface FileDiffHunk {
+  metadata: string;
+  hunk: string;
+}
