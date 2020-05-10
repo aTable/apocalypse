@@ -2,8 +2,9 @@ import React, { Fragment } from 'react';
 import { render } from 'react-dom';
 import { AppContainer as ReactHotAppContainer } from 'react-hot-loader';
 import App from './App';
-import 'xterm/css/xterm.css';
 import './app.global.css';
+
+// remember if you want to add vendor css to do so in ./app.global.css
 
 const AppContainer = process.env.PLAIN_HMR ? Fragment : ReactHotAppContainer;
 

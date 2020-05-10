@@ -7,6 +7,7 @@ import RepositoryChanges from './pages/RepositoryChanges';
 import RepositoryHistory from './pages/RepositoryHistory';
 import Repositories from './pages/Repositories';
 import { AuthContextProvider } from './stores/AuthContext';
+import { TerminalContextProvider } from './stores/TerminalContext';
 
 interface AppProps {
   _?: string;
@@ -15,23 +16,25 @@ interface AppProps {
 const App: FC<AppProps> = () => {
   return (
     <AuthContextProvider>
-      <Router>
-        <Navbar />
-        <Switch>
-          <Route
-            path="/repositories/:id/changes"
-            component={RepositoryChanges}
-          />
-          <Route
-            path="/repositories/:id/history"
-            component={RepositoryHistory}
-          />
-          <Route path="/repositories/:id" component={Repository} />
-          <Route path="/repositories" component={Repositories} />
-          <Route path="/" component={Repositories} />
-        </Switch>
-        <Terminal />
-      </Router>
+      <TerminalContextProvider>
+        <Router>
+          <Navbar />
+          <Switch>
+            <Route
+              path="/repositories/:id/changes"
+              component={RepositoryChanges}
+            />
+            <Route
+              path="/repositories/:id/history"
+              component={RepositoryHistory}
+            />
+            <Route path="/repositories/:id" component={Repository} />
+            <Route path="/repositories" component={Repositories} />
+            <Route path="/" component={Repositories} />
+          </Switch>
+          <Terminal />
+        </Router>
+      </TerminalContextProvider>
     </AuthContextProvider>
   );
 };

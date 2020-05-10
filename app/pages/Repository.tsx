@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { exec } from 'child_process';
 import { readFile } from 'fs';
 import { shell } from 'electron';
@@ -12,6 +12,7 @@ import {
   buildRepositoryLocationFromName
 } from '../utils/utils';
 import GitInspectorDetails from '../components/GitInspectorDetails';
+import TerminalContext from '../stores/TerminalContext';
 
 async function loadRepositoryStatistics(path: string): Promise<Repository> {
   const base: Repository = {
@@ -71,6 +72,7 @@ export interface RepositoryPageProps {
 
 const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   const [repository, setRepository] = useState<Repository>();
+  const { dispatch } = useContext(TerminalContext);
   const history = useHistory();
   useEffect(() => {
     if (!props.match.params.id) return;
@@ -78,6 +80,11 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
       buildRepositoryLocationFromName(props.match.params.id).path
     ).then(repo => {
       setRepository(repo);
+      dispatch({
+        type: 'SET_CURRENT_WORKING_DIRECTORY',
+        payload: `${repo.path}`
+      });
+      dispatch({ type: 'EXECUTE', payload: `cd ${repo.path}` });
       return repo;
     });
   }, [props]);

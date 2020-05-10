@@ -2,6 +2,17 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFiles, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function gitCommit(
+  repo: RepositoryLocation,
+  message: string
+): Promise<string> {
+  return new Promise(resolve => {
+    executeCommand(repo.path, `git commit -m "${message}"`, res => {
+      resolve(res);
+    });
+  });
+}
+
 export async function getRepositoryHistory(
   repo: RepositoryLocation
 ): Promise<string[]> {
@@ -12,6 +23,7 @@ export async function getRepositoryHistory(
     });
   });
 }
+
 export async function getGitStatus(
   repo: RepositoryLocation
 ): Promise<GitStatusFiles[]> {

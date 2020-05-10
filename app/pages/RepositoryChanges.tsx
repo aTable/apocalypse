@@ -6,7 +6,8 @@ import {
   getGitStatus,
   getFileDiff,
   stageFile,
-  stageAllChanges
+  stageAllChanges,
+  gitCommit
 } from '../utils/git-utils';
 import { RepositoryLocation } from '../types/repositories';
 import config from '../config';
@@ -25,6 +26,7 @@ const RepositoryChangesPage = (
   const [linesForContext, setLinesForContext] = useState<number>(
     config.linesForContext
   );
+  const [commitMessage, setCommitMessage] = useState('');
 
   const repositoryLocation = useMemo<RepositoryLocation>(
     () => buildRepositoryLocationFromName(props.match.params.id),
@@ -47,10 +49,23 @@ const RepositoryChangesPage = (
 
   const stageFileChanges = () => {
     if (!selectedFilePath) return;
-    stageFile(selectedFilePath);
+    stageFile(selectedFilePath)
+      .then(() => getGitStatus(repositoryLocation))
+      .then(setGitStatus)
+      .catch(console.warn);
   };
   const stageAllFileChanges = () => {
-    stageAllChanges();
+    stageAllChanges()
+      .then(() => getGitStatus(repositoryLocation))
+      .then(setGitStatus)
+      .catch(console.warn);
+  };
+
+  const commit = () => {
+    gitCommit(repositoryLocation, commitMessage)
+      .then(() => getGitStatus(repositoryLocation))
+      .then(setGitStatus)
+      .catch(console.warn);
   };
 
   return (
@@ -67,7 +82,7 @@ const RepositoryChangesPage = (
               type="button"
               className="btn btn-secondary btn-sm"
               style={{ float: 'right' }}
-              onClick={stageAllChanges}
+              onClick={stageAllFileChanges}
             >
               Stage All
             </button>
@@ -99,7 +114,7 @@ const RepositoryChangesPage = (
             </thead>
             <tbody>
               {gitStatus
-                ?.filter(x => x.xy[0] !== XY[' '])
+                ?.filter(x => x.xy[0] !== XY[' '] && x.xy[0] !== undefined)
                 .map(x => (
                   <tr key={x.path} onClick={() => setSelectedFilePath(x.path)}>
                     <td>{x.path}</td>
@@ -107,9 +122,26 @@ const RepositoryChangesPage = (
                 ))}
             </tbody>
           </table>
+
+          <hr />
+          <h2>Commit</h2>
+          <textarea
+            className="form-control"
+            value={commitMessage}
+            onChange={e => setCommitMessage(e.target.value)}
+          />
+          <br />
+          <button
+            className="btn btn-block btn-primary"
+            type="button"
+            onClick={commit}
+          >
+            Commit
+          </button>
         </div>
         <div className="col-5">
           <input
+            className="form-control"
             type="number"
             value={linesForContext}
             onChange={e => setLinesForContext(e.target.valueAsNumber)}
