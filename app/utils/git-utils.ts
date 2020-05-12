@@ -2,6 +2,20 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFile, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function gitShortlogBasic(
+  repo: RepositoryLocation
+): Promise<string> {
+  return new Promise(resolve => {
+    executeCommand(
+      repo.path,
+      `git shortlog  --numbered --email --summary`,
+      res => {
+        resolve(res);
+      }
+    );
+  });
+}
+
 export async function gitCommit(
   repo: RepositoryLocation,
   message: string,

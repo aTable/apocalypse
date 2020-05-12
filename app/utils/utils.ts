@@ -8,7 +8,7 @@ export function splitOnNewLine(text: string): string[] {
 }
 
 export function getListData(text: string): string[] {
-  return splitOnNewLine(text).filter(x => x);
+  return splitOnNewLine(text).filter((x) => x);
 }
 
 export function takeFirstStdOutputResponse(text: string): string {
@@ -21,7 +21,8 @@ export function executeCommand<T>(
   process: (res: string) => T
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    exec(`cd ${path} && ${command}`, (err, stdout, stderr) => {
+    const cmd = `cd ${path} && ${command}`;
+    exec(cmd, (err, stdout, stderr) => {
       if (err) reject(err);
       if (stderr) reject(stderr);
       const processed = process(stdout);
@@ -59,7 +60,7 @@ export function buildRepositoryLocationFromName(
 ): RepositoryLocation {
   return {
     path: join(config.repositoriesPath, repositoryName),
-    name: repositoryName
+    name: repositoryName,
   };
 }
 
@@ -69,6 +70,6 @@ export function buildRepositoryLocationFromPath(
   const fragments = repositoryPath.split('/');
   return {
     path: join(config.repositoriesPath, repositoryPath),
-    name: fragments[fragments.length - 1]
+    name: fragments[fragments.length - 1],
   };
 }

@@ -62,12 +62,14 @@ const RepositoryChangesPage = (
     stageFile(selectedFile.path)
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
+      .then(() => setDiff(undefined))
       .catch(console.warn);
   };
   const stageAllFileChanges = () => {
     stageAllChanges()
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
+      .then(() => setDiff(undefined))
       .catch(console.warn);
   };
 
@@ -75,6 +77,7 @@ const RepositoryChangesPage = (
     gitCommit(repositoryLocation, commitMessage, isAmendCommit, isVerifyCommit)
       .then(() => getGitStatus(repositoryLocation))
       .then(setGitStatus)
+      .then(() => setCommitMessage(''))
       .catch(console.warn);
   };
 
