@@ -1,3 +1,2 @@
 # apocalypse
-
-A cross platform git GUI
+Text

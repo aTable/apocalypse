@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { exec } from 'child_process';
-import { readFile } from 'fs';
+import { readFile, writeFile } from 'fs';
+import { join } from 'path';
 import { shell } from 'electron';
 import { RouteComponentProps, useHistory } from 'react-router-dom';
 import {
@@ -15,15 +16,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { parseISO, format, differenceInDays } from 'date-fns';
-import { Repository, RepositoryContribution } from '../types/dump';
+import { RepositoryContribution } from '../types/repositories';
 import {
   executeCommand,
   getListData,
   takeFirstStdOutputResponse,
   buildRepositoryLocationFromName,
-  executeCommandRaw,
 } from '../utils/utils';
-import GitInspectorDetails from '../components/GitInspectorDetails';
 import TerminalContext from '../stores/TerminalContext';
 import { RepositoryLocation } from '../types/repositories';
 
@@ -118,131 +117,170 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
     history.push(`/repositories/${repo?.name}/changes`);
   const goToRepositoryHistory = () =>
     history.push(`/repositories/${repo?.name}/history`);
-
+  const createReadme = () => {
+    if (!repo) return;
+    const createFilePath = join(repo.path, 'README.md');
+    const defaultReadmeContents = `# ${repo.name}\n\n`;
+    new Promise<string>((resolve) => {
+      writeFile(createFilePath, defaultReadmeContents, () => {
+        resolve(defaultReadmeContents);
+      });
+    }).then(() => setReadme(defaultReadmeContents));
+  };
   return (
-    <>
-      <p>
-        <strong>{repo?.name}</strong>
-      </p>
-      <p>{repo?.path}</p>
-      <p>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={openRepositoryFolder}
-        >
-          <i className="fa fa-folder" />
-        </button>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={openRepositoryShell}
-        >
-          <i className="fa fa-terminal" />
-        </button>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={goToRepositoryChanges}
-        >
-          <i className="fa fa-list" />
-        </button>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={goToRepositoryHistory}
-        >
-          <i className="fa fa-history" />
-        </button>
-      </p>
-
-      <p>// TODO: insert line chart on repo commits over time</p>
-      <p>
-        // TODO: repository suggestions: missing
-        <a href="https://gitignore.io">.gitignore</a>, .editorconfig, linting,
-        ...
-      </p>
-
-      {contributions && (
-        <div style={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer>
-            <PieChart width={400} height={400}>
-              <Pie
-                dataKey="count"
-                nameKey="email"
-                data={contributions}
-                fill="#82ca9d"
-              />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <p>
+            <strong>{repo?.name}</strong>
+          </p>
+          <p>{repo?.path}</p>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={openRepositoryFolder}
+          >
+            <i className="fa fa-folder" />
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={openRepositoryShell}
+          >
+            <i className="fa fa-terminal" />
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={goToRepositoryChanges}
+          >
+            <i className="fa fa-list" />
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={goToRepositoryHistory}
+          >
+            <i className="fa fa-history" />
+          </button>
         </div>
-      )}
+        <div className="col-md-6">
+          <table className="table table-sm">
+            <thead>
+              <tr>
+                <th>Stat</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Commit count</td>
+                <td>{commitCount}</td>
+              </tr>
+              <tr>
+                <td>Last commit</td>
+                <td>{lastCommit ? format(lastCommit, 'PPpp') : ''}</td>
+              </tr>
+              <tr>
+                <td>First commit</td>
+                <td>{firstCommit ? format(firstCommit, 'PPpp') : ''}</td>
+              </tr>
+              <tr>
+                <td>Alive for</td>
+                <td>
+                  {firstCommit && lastCommit
+                    ? `${differenceInDays(lastCommit, firstCommit)} days`
+                    : ''}
+                </td>
+              </tr>
+              <tr>
+                <td>Commit count</td>
+                <td>{commitCount}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="col-md-6">
+          {contributions && (
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    dataKey="count"
+                    nameKey="email"
+                    data={contributions}
+                    fill="#82ca9d"
+                  />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+        <div className="col-12">
+          <p>
+            <strong>Checklist</strong>
+          </p>
+          <ul>
+            <li>
+              {readme ? (
+                <span>
+                  <i className="text-success fa fa-check-circle" /> README.md
+                </span>
+              ) : (
+                <span>
+                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                  <a href="https://en.wikipedia.org/wiki/README">README.md</a>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={createReadme}
+                  >
+                    Create
+                  </button>
+                </span>
+              )}
+            </li>
+            <li>.gitignore</li>
+            <li>.editorconfig</li>
+            <li>linting</li>
+          </ul>
+          <p>// TODO: insert line chart on repo commits over time</p>
+          <hr />
+          <p>
+            <strong>Remotes</strong>
+          </p>
+          <ul>
+            {remotes?.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
 
-      <table className="table table-sm">
-        <thead>
-          <tr>
-            <th>Stat</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Commit count</td>
-            <td>{commitCount}</td>
-          </tr>
-          <tr>
-            <td>Last commit</td>
-            <td>{lastCommit ? format(lastCommit, 'PPpp') : ''}</td>
-          </tr>
-          <tr>
-            <td>First commit</td>
-            <td>{firstCommit ? format(firstCommit, 'PPpp') : ''}</td>
-          </tr>
-          <tr>
-            <td>Alive for</td>
-            <td>
-              {firstCommit && lastCommit
-                ? `${differenceInDays(lastCommit, firstCommit)} days`
-                : ''}
-            </td>
-          </tr>
-          <tr>
-            <td>Commit count</td>
-            <td>{commitCount}</td>
-          </tr>
-        </tbody>
-      </table>
+          <hr />
+          <p>
+            <strong>Branches</strong>
+          </p>
+          <ul>
+            {branches?.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
 
-      <hr />
-      <p>
-        <strong>Remotes</strong>
-      </p>
-      <ul>
-        {remotes?.map((r) => (
-          <li key={r}>{r}</li>
-        ))}
-      </ul>
+          <hr />
+          {readme && (
+            <>
+              <p>
+                <strong>Readme</strong>
+              </p>
+              <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+                {readme}
+              </pre>
+            </>
+          )}
 
-      <hr />
-      <p>
-        <strong>Branches</strong>
-      </p>
-      <ul>
-        {branches?.map((r) => (
-          <li key={r}>{r}</li>
-        ))}
-      </ul>
-
-      <hr />
-      <p>
-        <strong>Readme</strong>
-      </p>
-      <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>{readme}</pre>
-
-      <hr />
-      <GitInspectorDetails path={repo?.path} />
-    </>
+          <hr />
+        </div>
+      </div>
+    </div>
   );
 };
 
