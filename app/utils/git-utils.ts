@@ -5,11 +5,11 @@ import { executeCommand, executeCommandRaw } from './utils';
 export async function gitShortlogBasic(
   repo: RepositoryLocation
 ): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     executeCommand(
       repo.path,
       `git shortlog  --numbered --email --summary`,
-      res => {
+      (res) => {
         resolve(res);
       }
     );
@@ -22,13 +22,13 @@ export async function gitCommit(
   isAmendCommit: boolean,
   isVerifyCommit: boolean
 ): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     executeCommand(
       repo.path,
       `git commit -m "${message}" ${isAmendCommit ? '--amend ' : ''} ${
         isVerifyCommit ? '' : '--no-verify'
       }`,
-      res => {
+      (res) => {
         resolve(res);
       }
     );
@@ -38,9 +38,9 @@ export async function gitCommit(
 export async function getRepositoryHistory(
   repo: RepositoryLocation
 ): Promise<string[]> {
-  return new Promise(resolve => {
-    executeCommand(repo.path, 'git log --oneline', res => {
-      const mapped = res.split('\n').filter(x => x);
+  return new Promise((resolve) => {
+    executeCommand(repo.path, 'git log --oneline', (res) => {
+      const mapped = res.split('\n').filter((x) => x);
       resolve(mapped);
     });
   });
@@ -49,18 +49,18 @@ export async function getRepositoryHistory(
 export async function getGitStatus(
   repo: RepositoryLocation
 ): Promise<GitStatusFile[]> {
-  return new Promise(resolve => {
-    executeCommand(repo.path, 'git status -s', res => {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, 'git status -s', (res) => {
       const mapped = res
         .split('\n')
-        .filter(x => x)
-        .map<GitStatusFile>(change => {
+        .filter((x) => x)
+        .map<GitStatusFile>((change) => {
           const gitStatus: GitStatusFile = {
             xy: [
               XY[change[0] as keyof typeof XY],
-              XY[change[1] as keyof typeof XY]
+              XY[change[1] as keyof typeof XY],
             ],
-            path: change.substring(2)
+            path: change.substring(2),
           };
           return gitStatus;
         });
@@ -74,12 +74,12 @@ export async function getFileDiff(
   linesForContext: number,
   isStaged: boolean
 ): Promise<FileDiff> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     executeCommandRaw(
       `git diff --unified=${linesForContext} ${
         isStaged ? '--cached' : ''
       } ${path}`,
-      res => {
+      (res) => {
         const metadataStartText = '@@ -';
         const metadataEndText = ' @@';
         const [command, mode, a, b, ...rest] = res.split('\n');
@@ -93,7 +93,7 @@ export async function getFileDiff(
                 0,
                 metadataLastIndex + metadataEndText.length
               ),
-              hunk: ''
+              hunk: '',
             });
             hunks[hunks.length - 1].hunk = `${rest[i].substring(
               metadataLastIndex + metadataEndText.length
@@ -109,7 +109,7 @@ export async function getFileDiff(
           mode,
           a,
           b,
-          hunks
+          hunks,
         };
         return resolve(result);
       }
@@ -118,16 +118,24 @@ export async function getFileDiff(
 }
 
 export async function stageFile(path: string): Promise<string> {
-  return new Promise(resolve => {
-    executeCommandRaw(`git add ${path}`, res => {
+  return new Promise((resolve) => {
+    executeCommandRaw(`git add ${path}`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
+export async function discardFile(path: string): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommandRaw(`git restore ${path}`, (res) => {
       resolve(res);
     });
   });
 }
 
 export async function stageAllChanges(): Promise<string> {
-  return new Promise(resolve => {
-    executeCommandRaw(`git add -A`, res => {
+  return new Promise((resolve) => {
+    executeCommandRaw(`git add -A`, (res) => {
       resolve(res);
     });
   });

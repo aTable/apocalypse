@@ -11,10 +11,8 @@
 import path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import { mkdir, readdir, unlink } from 'fs';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { loadConfig } from './config';
 
 export default class AppUpdater {
   constructor() {
@@ -44,7 +42,7 @@ const installExtensions = async () => {
   const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
 
   return Promise.all(
-    extensions.map(name => installer.default(installer[name], forceDownload))
+    extensions.map((name) => installer.default(installer[name], forceDownload))
   ).catch(console.log);
 };
 
@@ -63,11 +61,11 @@ const createWindow = async () => {
     webPreferences:
       process.env.NODE_ENV === 'development' || process.env.E2E_BUILD === 'true'
         ? {
-            nodeIntegration: true
+            nodeIntegration: true,
           }
         : {
-            preload: path.join(__dirname, 'dist/renderer.prod.js')
-          }
+            preload: path.join(__dirname, 'dist/renderer.prod.js'),
+          },
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
@@ -84,22 +82,6 @@ const createWindow = async () => {
       mainWindow.show();
       mainWindow.focus();
     }
-
-    // load config
-    loadConfig();
-
-    // mkdir(config.tempDirectoryPath, err => {
-    //   if (err?.code !== 'EEXIST') throw err;
-
-    //   readdir(config.tempDirectoryPath, (err2, files) => {
-    //     if (err2) throw err;
-    //     files.map(file =>
-    //       unlink(path.join(config.tempDirectoryPath, file), err3 => {
-    //         if (err3) throw err3;
-    //       })
-    //     );
-    //   });
-    // });
   });
 
   mainWindow.on('closed', () => {

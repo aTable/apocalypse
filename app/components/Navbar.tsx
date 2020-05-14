@@ -5,7 +5,7 @@ import NavItem from './NavItem';
 export interface NavBarProps {}
 const NavBar: FC<NavBarProps> = () => {
   return (
-    <nav className="navbar navbar-expand-sm navbar-light bg-light">
+    <nav className="navbar navbar-expand-sm">
       <Link className="navbar-brand" to="/repositories">
         Apocalypse
       </Link>

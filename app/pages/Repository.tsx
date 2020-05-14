@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { exec } from 'child_process';
-import { readFile, writeFile } from 'fs';
+import { readFile, writeFile, stat } from 'fs';
 import { join } from 'path';
 import { shell } from 'electron';
 import { RouteComponentProps, useHistory } from 'react-router-dom';
@@ -25,12 +25,15 @@ import {
 } from '../utils/utils';
 import TerminalContext from '../stores/TerminalContext';
 import { RepositoryLocation } from '../types/repositories';
+import { draculaGraphColors } from '../constants';
+import AppContext from '../stores/AppContext';
 
 export interface RepositoryPageProps {
   id: string;
 }
 
 const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
+  const appContext = useContext(AppContext);
   const { dispatch } = useContext(TerminalContext);
   const history = useHistory();
   const [repo, setRepository] = useState<RepositoryLocation>();
@@ -45,10 +48,18 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   const [contributions, setContributions] = useState<
     RepositoryContribution[]
   >();
+  const [hasEditorConfig, setHasEditorConfig] = useState<boolean>();
+  const [hasGitIgnore, setHasGitIgnore] = useState<boolean>();
+  const [hasLicense, setHasLicense] = useState<boolean>();
 
   useEffect(() => {
     if (!props.match.params.id) return;
-    setRepository(buildRepositoryLocationFromName(props.match.params.id));
+    setRepository(
+      buildRepositoryLocationFromName(
+        appContext.state.repositoriesPath,
+        props.match.params.id
+      )
+    );
   }, [props]);
 
   useEffect(() => {
@@ -103,6 +114,31 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
         return contribs;
       }
     ).then(setContributions);
+
+    new Promise((resolve, reject) => {
+      stat(join(repo.path, '.gitignore'), (err, stats) => {
+        if (err) reject(err);
+        resolve(stats);
+      });
+    })
+      .then(() => setHasGitIgnore(true))
+      .catch(() => setHasGitIgnore(false));
+    new Promise((resolve, reject) => {
+      stat(join(repo.path, '.editorconfig'), (err, stats) => {
+        if (err) reject(err);
+        resolve(stats);
+      });
+    })
+      .then(() => setHasEditorConfig(true))
+      .catch(() => setHasEditorConfig(false));
+    new Promise((resolve, reject) => {
+      stat(join(repo.path, 'LICENSE'), (err, stats) => {
+        if (err) reject(err);
+        resolve(stats);
+      });
+    })
+      .then(() => setHasLicense(true))
+      .catch(() => setHasLicense(false));
   }, [repo]);
 
   const openRepositoryFolder = (): void => {
@@ -120,58 +156,84 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   const createReadme = () => {
     if (!repo) return;
     const createFilePath = join(repo.path, 'README.md');
-    const defaultReadmeContents = `# ${repo.name}\n\n`;
+    const contents = `# ${repo.name}\n\n`;
     new Promise<string>((resolve) => {
-      writeFile(createFilePath, defaultReadmeContents, () => {
-        resolve(defaultReadmeContents);
+      writeFile(createFilePath, contents, () => {
+        resolve(contents);
       });
-    }).then(() => setReadme(defaultReadmeContents));
+    }).then(() => setReadme(contents));
   };
+  const createEditorConfig = () => {
+    if (!repo) return;
+    const createFilePath = join(repo.path, '.editorconfig');
+    const contents = ``;
+    new Promise<string>((resolve) => {
+      writeFile(createFilePath, contents, () => {
+        resolve(contents);
+      });
+    }).then(() => setHasEditorConfig(true));
+  };
+  const createGitIgnore = () => {
+    if (!repo) return;
+    const createFilePath = join(repo.path, '.gitignore');
+    const contents = ``;
+    new Promise<string>((resolve) => {
+      writeFile(createFilePath, contents, () => {
+        resolve(contents);
+      });
+    }).then(() => setHasGitIgnore(true));
+  };
+
   return (
     <div className="container-fluid">
       <div className="row">
         <div className="col-12">
-          <p>
-            <strong>{repo?.name}</strong>
-          </p>
-          <p>{repo?.path}</p>
-          <button
-            className="btn btn-secondary btn-sm"
-            type="button"
-            onClick={openRepositoryFolder}
+          <h1>{repo?.name}</h1>
+          <small>{repo?.path}</small>
+
+          <div
+            className="btn-toolbar"
+            role="toolbar"
+            aria-label="Toolbar with button groups"
           >
-            <i className="fa fa-folder" />
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            type="button"
-            onClick={openRepositoryShell}
-          >
-            <i className="fa fa-terminal" />
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            type="button"
-            onClick={goToRepositoryChanges}
-          >
-            <i className="fa fa-list" />
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            type="button"
-            onClick={goToRepositoryHistory}
-          >
-            <i className="fa fa-history" />
-          </button>
+            <div
+              className="btn-group mr-2 btn-group-sm"
+              role="group"
+              aria-label="First group"
+            >
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={openRepositoryFolder}
+              >
+                <i className="fa fa-folder" />
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={openRepositoryShell}
+              >
+                <i className="fa fa-terminal" />
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={goToRepositoryChanges}
+              >
+                <i className="fa fa-list" />
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={goToRepositoryHistory}
+              >
+                <i className="fa fa-history" />
+              </button>
+            </div>
+          </div>
         </div>
         <div className="col-md-6">
           <table className="table table-sm">
-            <thead>
-              <tr>
-                <th>Stat</th>
-                <th>Value</th>
-              </tr>
-            </thead>
             <tbody>
               <tr>
                 <td>Commit count</td>
@@ -202,13 +264,17 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
         </div>
         <div className="col-md-6">
           {contributions && (
-            <div style={{ width: '100%', height: 300 }}>
+            <div style={{ width: '100%', height: 200 }}>
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
+                    isAnimationActive={false}
                     dataKey="count"
                     nameKey="email"
-                    data={contributions}
+                    data={contributions.map((x, i) => ({
+                      ...x,
+                      fill: draculaGraphColors[i % draculaGraphColors.length],
+                    }))}
                     fill="#82ca9d"
                   />
                   <Tooltip />
@@ -218,9 +284,7 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
           )}
         </div>
         <div className="col-12">
-          <p>
-            <strong>Checklist</strong>
-          </p>
+          <h2>Checklist</h2>
           <ul>
             <li>
               {readme ? (
@@ -240,41 +304,80 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
                 </span>
               )}
             </li>
-            <li>.gitignore</li>
-            <li>.editorconfig</li>
-            <li>linting</li>
+            <li>
+              {hasGitIgnore ? (
+                <span>
+                  <i className="text-success fa fa-check-circle" /> .gitignore
+                </span>
+              ) : (
+                <span>
+                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                  <a href="https://git-scm.com/docs/gitignore">.gitignore</a>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={createGitIgnore}
+                  >
+                    Create
+                  </button>
+                </span>
+              )}
+            </li>
+            <li>
+              {hasEditorConfig ? (
+                <span>
+                  <i className="text-success fa fa-check-circle" />{' '}
+                  .editorconfig
+                </span>
+              ) : (
+                <span>
+                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                  <a href="https://editorconfig.org/">.editorconfig</a>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={createEditorConfig}
+                  >
+                    Create
+                  </button>
+                </span>
+              )}
+            </li>
+            <li>
+              {hasLicense ? (
+                <span>
+                  <i className="text-success fa fa-check-circle" /> LICENSE
+                </span>
+              ) : (
+                <span>
+                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                  <a href="https://choosealicense.com/">LICENSE</a>
+                </span>
+              )}
+            </li>
           </ul>
-          <p>// TODO: insert line chart on repo commits over time</p>
           <hr />
-          <p>
-            <strong>Remotes</strong>
-          </p>
+
+          <h2>Remotes</h2>
           <ul>
             {remotes?.map((r) => (
               <li key={r}>{r}</li>
             ))}
           </ul>
-
           <hr />
-          <p>
-            <strong>Branches</strong>
-          </p>
+
+          <h2>Branches</h2>
           <ul>
             {branches?.map((r) => (
               <li key={r}>{r}</li>
             ))}
           </ul>
-
           <hr />
+
+          <h2>Readme</h2>
+          {!readme && <p>No README.md</p>}
           {readme && (
-            <>
-              <p>
-                <strong>Readme</strong>
-              </p>
-              <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
-                {readme}
-              </pre>
-            </>
+            <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+              {readme}
+            </pre>
           )}
 
           <hr />

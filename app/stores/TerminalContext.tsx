@@ -3,9 +3,10 @@ import React, {
   useReducer,
   FC,
   Dispatch,
-  useEffect
+  useEffect,
+  useContext,
 } from 'react';
-import config from '../config';
+import AppContext from './AppContext';
 
 export const TerminalContext = createContext<TerminalContextProps>(
   {} as TerminalContextProps
@@ -29,12 +30,12 @@ export const reducer = (
     case 'SET_CURRENT_WORKING_DIRECTORY':
       return {
         ...state,
-        cwd: action.payload
+        cwd: action.payload,
       };
     case 'EXECUTE':
       return {
         ...state,
-        history: [...state.history, action.payload]
+        history: [...state.history, action.payload],
       };
     case 'LOAD_PREVIOUS_SESSION':
       return state;
@@ -47,11 +48,12 @@ export interface TerminalContextProps {
   state: TerminalContext;
   dispatch: Dispatch<TerminalActions>;
 }
-export const TerminalContextProvider: FC<any> = props => {
+export const TerminalContextProvider: FC<any> = (props) => {
+  const appContext = useContext(AppContext);
   const [state, dispatch] = useReducer(
     reducer,
-    { cwd: config.repositoriesPath, history: [] },
-    init => init
+    { cwd: appContext.state.repositoriesPath, history: [] },
+    (init) => init
   );
 
   useEffect(() => {

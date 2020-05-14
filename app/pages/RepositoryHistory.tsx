@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
 
 import { RouteComponentProps } from 'react-router-dom';
 import { RepositoryLocation } from '../types/repositories';
 import { buildRepositoryLocationFromName } from '../utils/utils';
 import { getRepositoryHistory } from '../utils/git-utils';
+import AppContext from '../stores/AppContext';
 
 export interface RepositoryHistoryPageProps {
   id: string;
@@ -12,9 +13,14 @@ export interface RepositoryHistoryPageProps {
 const RepositoryHistoryPage = (
   props: RouteComponentProps<RepositoryHistoryPageProps>
 ) => {
+  const appContext = useContext(AppContext);
   const [history, setHistory] = useState<string[]>();
   const repositoryLocation = useMemo<RepositoryLocation>(
-    () => buildRepositoryLocationFromName(props.match.params.id),
+    () =>
+      buildRepositoryLocationFromName(
+        appContext.state.repositoriesPath,
+        props.match.params.id
+      ),
     [props.match.params.id]
   );
 
@@ -30,7 +36,7 @@ const RepositoryHistoryPage = (
       <h1>History</h1>
 
       <ul>
-        {history?.map(x => (
+        {history?.map((x) => (
           <li key={x}>{x}</li>
         ))}
       </ul>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { buildRepositoryLocationFromName } from '../utils/utils';
 import { GitStatusFile, XY, FileDiff } from '../types/git';
@@ -9,11 +9,12 @@ import {
   stageAllChanges,
   gitCommit,
   isFileStaged,
-  isFileUnstaged
+  isFileUnstaged,
+  discardFile,
 } from '../utils/git-utils';
 import { RepositoryLocation } from '../types/repositories';
-import config from '../config';
 import GitDiffHunk from '../components/GitDiffHunk';
+import AppContext from '../stores/AppContext';
 
 export interface RepositoryChangesPageProps {
   id: string;
@@ -21,33 +22,36 @@ export interface RepositoryChangesPageProps {
 
 enum FileMode {
   unstaged = 'unstaged',
-  staged = 'staged'
+  staged = 'staged',
 }
 
 const RepositoryChangesPage = (
   props: RouteComponentProps<RepositoryChangesPageProps>
 ) => {
+  const appContext = useContext(AppContext);
   const [gitStatus, setGitStatus] = useState<GitStatusFile[]>();
   const [selectedFile, setSelectedFile] = useState<GitStatusFile>();
   const [mode, setMode] = useState<FileMode>();
   const [diff, setDiff] = useState<FileDiff>();
   const [linesForContext, setLinesForContext] = useState<number>(
-    config.linesForContext
+    appContext.state.linesForContext
   );
   const [commitMessage, setCommitMessage] = useState('');
   const [isAmendCommit, setIsAmendCommit] = useState(false);
   const [isVerifyCommit, setIsVerifyCommit] = useState(true);
 
   const repositoryLocation = useMemo<RepositoryLocation>(
-    () => buildRepositoryLocationFromName(props.match.params.id),
+    () =>
+      buildRepositoryLocationFromName(
+        appContext.state.repositoriesPath,
+        props.match.params.id
+      ),
     [props.match.params.id]
   );
 
   useEffect(() => {
     if (!props.match.params.id) return;
-    getGitStatus(repositoryLocation)
-      .then(setGitStatus)
-      .catch(console.warn);
+    getGitStatus(repositoryLocation).then(setGitStatus).catch(console.warn);
   }, [props]);
 
   useEffect(() => {
@@ -57,6 +61,14 @@ const RepositoryChangesPage = (
       .catch(console.warn);
   }, [selectedFile, linesForContext, mode]);
 
+  const discardFileChanges = () => {
+    if (!selectedFile) return;
+    discardFile(selectedFile.path)
+      .then(() => getGitStatus(repositoryLocation))
+      .then(setGitStatus)
+      .then(() => setDiff(undefined))
+      .catch(console.warn);
+  };
   const stageFileChanges = () => {
     if (!selectedFile) return;
     stageFile(selectedFile.path)
@@ -112,7 +124,7 @@ const RepositoryChangesPage = (
               </tr>
             </thead>
             <tbody>
-              {gitStatus?.filter(isFileUnstaged).map(x => (
+              {gitStatus?.filter(isFileUnstaged).map((x) => (
                 <tr
                   key={x.path}
                   onClick={() => fileClicked(x, FileMode.unstaged)}
@@ -132,7 +144,7 @@ const RepositoryChangesPage = (
               </tr>
             </thead>
             <tbody>
-              {gitStatus?.filter(isFileStaged).map(x => (
+              {gitStatus?.filter(isFileStaged).map((x) => (
                 <tr
                   key={x.path}
                   onClick={() => fileClicked(x, FileMode.staged)}
@@ -166,7 +178,7 @@ const RepositoryChangesPage = (
           <textarea
             className="form-control"
             value={commitMessage}
-            onChange={e => setCommitMessage(e.target.value)}
+            onChange={(e) => setCommitMessage(e.target.value)}
           />
           <br />
           <button
@@ -182,7 +194,7 @@ const RepositoryChangesPage = (
             className="form-control"
             type="number"
             value={linesForContext}
-            onChange={e => setLinesForContext(e.target.valueAsNumber)}
+            onChange={(e) => setLinesForContext(e.target.valueAsNumber)}
           />
 
           <div>
@@ -193,12 +205,19 @@ const RepositoryChangesPage = (
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
+                  onClick={discardFileChanges}
+                >
+                  Discard File
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
                   onClick={stageFileChanges}
                 >
-                  Stage All
+                  Stage File
                 </button>
 
-                {diff.hunks.map(x => (
+                {diff.hunks.map((x) => (
                   <GitDiffHunk
                     key={x.metadata}
                     hunk={x}

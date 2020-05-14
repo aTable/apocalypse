@@ -1,0 +1,52 @@
+$dracula-background: hsl(231, 15%, 18%);
+$dracula-current-line: hsl(232, 14%, 31%);
+$dracula-selection: hsl(232, 14%, 31%);
+$dracula-foreground: hsl(60, 30%, 96%);
+$dracula-comment: hsl(225, 27%, 51%);
+$dracula-cyan: hsl(191, 97%, 77%);
+$dracula-green: hsl(135, 94%, 65%);
+$dracula-orange: hsl(31, 100%, 71%);
+$dracula-pink: hsl(326, 100%, 74%);
+$dracula-purple: hsl(265, 89%, 78%);
+$dracula-red: hsl(0, 100%, 67%);
+$dracula-yellow: hsl(65, 92%, 76%);
+
+html,
+body {
+  background-color: $dracula-background;
+  color: $dracula-foreground;
+}
+
+div#tabs {
+  background-color: white !important;
+}
+
+table,
+pre {
+  color: $dracula-foreground;
+}
+
+hr {
+  border-top: 1px solid $dracula-background;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: $dracula-purple;
+}
+
+nav {
+  a {
+    color: $dracula-purple;
+  }
+}
+
+/* bootstrap overrides */
+table,
+.table {
+  color: $dracula-foreground !important;
+}

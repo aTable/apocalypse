@@ -1,33 +1,37 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { readdir } from 'fs';
 import { useHistory } from 'react-router-dom';
-import config from '../config';
 import { RepositoryLocation } from '../types/repositories';
 import { buildRepositoryLocationFromPath } from '../utils/utils';
 import TerminalContext from '../stores/TerminalContext';
+import AppContext from '../stores/AppContext';
 
 const Repositories = () => {
   const [repositories, setRepositories] = useState<RepositoryLocation[]>([]);
   const { dispatch } = useContext(TerminalContext);
+  const appContext = useContext(AppContext);
   const history = useHistory();
 
   useEffect(() => {
     dispatch({
       type: 'SET_CURRENT_WORKING_DIRECTORY',
-      payload: config.repositoriesPath
+      payload: appContext.state.repositoriesPath,
     });
     dispatch({
       type: 'EXECUTE',
-      payload: `cd ${config.repositoriesPath}`
+      payload: `cd ${appContext.state.repositoriesPath}`,
     });
-    readdir(config.repositoriesPath, (err, paths) => {
+    readdir(appContext.state.repositoriesPath, (err, paths) => {
       if (err) throw err;
-      const repos = paths.map(buildRepositoryLocationFromPath);
+      const repos = paths.map((x) =>
+        buildRepositoryLocationFromPath(appContext.state.repositoriesPath, x)
+      );
       setRepositories(repos);
     });
-  }, [config]);
+  }, [appContext.state]);
 
-  const goToRepository = (x: RepositoryLocation) => {
+  const repositoryClicked = (x: RepositoryLocation) => {
+    appContext.dispatch({ type: 'OPEN_TAB', payload: x });
     history.push(`/repositories/${x.name}`);
   };
 
@@ -36,10 +40,10 @@ const Repositories = () => {
       <div className="row">
         <div className="col-3">
           <h2>Repositories</h2>
-          {repositories.map(x => (
+          {repositories.map((x) => (
             <div
               key={x.path}
-              onClick={() => goToRepository(x)}
+              onClick={() => repositoryClicked(x)}
               onKeyPress={undefined}
               role="button"
               tabIndex={-1}

@@ -3,6 +3,8 @@ import { render } from 'react-dom';
 import { AppContainer as ReactHotAppContainer } from 'react-hot-loader';
 import App from './App';
 import './app.global.css';
+import './css/main.scss';
+import './css/dracula-theme.scss';
 
 // remember if you want to add vendor css to do so in ./app.global.css
 

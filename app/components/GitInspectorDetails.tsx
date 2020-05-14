@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState, useEffect } from 'react';
 import { executePythonCommand } from '../utils/utils';
-import config from '../config';
 
 export interface GitInspectorDetailsProps {
   path: string | undefined;
@@ -9,7 +8,7 @@ export interface GitInspectorDetailsProps {
 
 enum GitInspectorModes {
   text = 'text',
-  html = 'html'
+  html = 'html',
 }
 
 function renderStatistic(mode: GitInspectorModes, inline?: string) {
@@ -62,7 +61,7 @@ const GitInspectorDetails = (props: GitInspectorDetailsProps) => {
               id={inspectorModeDomId}
               className="form-control"
               value={mode}
-              onChange={e =>
+              onChange={(e) =>
                 setMode(
                   GitInspectorModes[
                     e.currentTarget.value as keyof typeof GitInspectorModes
