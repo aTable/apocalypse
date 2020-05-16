@@ -2,6 +2,16 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFile, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function getUnpushedCommits(
+  repo: RepositoryLocation
+): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, `git log --branches --not --remotes`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
 export async function gitShortlogBasic(
   repo: RepositoryLocation
 ): Promise<string> {
