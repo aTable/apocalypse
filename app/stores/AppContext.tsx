@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import { readFile, writeFile, mkdir } from 'fs';
 import { RepositoryLocation } from '../types/repositories';
-import { useHistory } from 'react-router';
 
 export const AppContext = createContext<AppContextProps>({} as AppContextProps);
 
@@ -22,15 +21,27 @@ export interface AppContext {
   serverUri: string;
   linesForContext: number;
   openTabs: RepositoryLocation[];
+  currentTab?: RepositoryLocation;
 }
 
 export interface AppActions {
   payload: any;
-  type: 'OPEN_TAB' | 'CLOSE_TAB' | 'LOAD_CONFIG';
+  type:
+    | 'SET_CURRENT_TAB'
+    | 'OPEN_TAB'
+    | 'CLOSE_TAB'
+    | 'LOAD_CONFIG'
+    | 'SET_LINES_FOR_CONTEXT';
 }
 
 export const reducer = (state: AppContext, action: AppActions): AppContext => {
   switch (action.type) {
+    case 'SET_CURRENT_TAB': {
+      return {
+        ...state,
+        currentTab: action.payload,
+      };
+    }
     case 'OPEN_TAB': {
       const isMatch = state.openTabs.some(
         (x) => x.path === action.payload.path
@@ -46,6 +57,12 @@ export const reducer = (state: AppContext, action: AppActions): AppContext => {
         ...state,
         // @ts-ignore
         openTabs: state.openTabs.filter((x) => x.path !== action.payload.path),
+      };
+    }
+    case 'SET_LINES_FOR_CONTEXT': {
+      return {
+        ...state,
+        linesForContext: action.payload,
       };
     }
     case 'LOAD_CONFIG': {

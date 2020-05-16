@@ -32,19 +32,23 @@ const RepositoryHistoryPage = (
   }, [props]);
 
   return (
-    <>
-      <h1>History</h1>
+    <div className="container-fluid" style={{ height: 'inherit' }}>
+      <div className="row" style={{ height: 'inherit', overflowY: 'scroll' }}>
+        <div className="col-12" style={{ height: 'inherit' }}>
+          <h1>History</h1>
 
-      <ul>
-        {history?.map((x) => (
-          <li key={x}>{x}</li>
-        ))}
-      </ul>
+          <ul>
+            {history?.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
 
-      <h2>Commit</h2>
-      <h2>Changes</h2>
-      <h2>File Tree</h2>
-    </>
+          <h2>Commit</h2>
+          <h2>Changes</h2>
+          <h2>File Tree</h2>
+        </div>
+      </div>
+    </div>
   );
 };
 

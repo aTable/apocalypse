@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { readdir } from 'fs';
-import { join } from 'path';
-import { useHistory } from 'react-router-dom';
+import React from 'react';
 
 const Home = () => {
   return (

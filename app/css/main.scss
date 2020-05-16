@@ -1,18 +1,71 @@
+$toolbar-height: 5vh;
+$tabs-height: 5vh;
+$content-height: 60vh;
+$terminal-height: 30vh;
+
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.5rem !important;
 }
 h2 {
-  font-size: 1.3rem;
+  font-size: 1.3rem !important;
 }
 h3 {
-  font-size: 1.1rem;
+  font-size: 1.1rem !important;
 }
 h4 {
-  font-size: 1rem;
+  font-size: 1rem !important;
 }
 h5 {
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
 }
 h6 {
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
+}
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  position: absolute;
+  top: $toolbar-height;
+  left: 0;
+  width: 100%;
+  height: $tabs-height;
+
+  & > div {
+    cursor: pointer;
+    text-align: center;
+    flex-grow: 1;
+    transition: background-color ease-in 30ms;
+    transition: color ease-in 30ms;
+    border: 1px solid black;
+    border-radius: 4px;
+    & > button {
+      margin-left: 1rem;
+    }
+  }
+}
+
+.contentContainer {
+  position: absolute;
+  top: $toolbar-height + $tabs-height;
+  left: 0;
+  width: 100%;
+  height: $content-height;
+  padding-top: 0.3rem;
+}
+
+.terminal {
+  position: absolute;
+  top: $toolbar-height + $tabs-height + $content-height;
+  left: 0;
+  width: 100%;
+  height: $terminal-height;
+  overflow-y: none;
+  background-color: black; /* TODO: terminal resize doesnt seem to fully take parents height...so hide it lul */
 }

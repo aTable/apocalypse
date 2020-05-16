@@ -185,8 +185,8 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="row">
+    <div className="container-fluid" style={{ height: 'inherit' }}>
+      <div className="row" style={{ height: 'inherit', overflowY: 'scroll' }}>
         <div className="col-12">
           <h1>{repo?.name}</h1>
           <small>{repo?.path}</small>
@@ -215,6 +215,12 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
               >
                 <i className="fa fa-terminal" />
               </button>
+            </div>
+            <div
+              className="btn-group mr-2 btn-group-sm"
+              role="group"
+              aria-label="Second group"
+            >
               <button
                 className="btn btn-secondary btn-sm"
                 type="button"
@@ -285,6 +291,10 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
         </div>
         <div className="col-12">
           <h2>Checklist</h2>
+          <p>
+            More information can be{' '}
+            <a href="https://opensource.guide/">found here</a>
+          </p>
           <ul>
             <li>
               {readme ? (
@@ -372,7 +382,7 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
           </ul>
           <hr />
 
-          <h2>Readme</h2>
+          <h2>README</h2>
           {!readme && <p>No README.md</p>}
           {readme && (
             <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>

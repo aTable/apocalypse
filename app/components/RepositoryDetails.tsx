@@ -3,12 +3,12 @@ import { exec } from 'child_process';
 import { readFile } from 'fs';
 import { shell } from 'electron';
 import { parseISO, format, differenceInDays } from 'date-fns';
-import { Repository } from '../types/dump';
+import { Repository } from '../types/repositories';
 
 import {
   executeCommand,
   getListData,
-  takeFirstStdOutputResponse
+  takeFirstStdOutputResponse,
 } from '../utils/utils';
 import GitInspectorDetails from './GitInspectorDetails';
 
@@ -23,7 +23,7 @@ async function loadRepositoryStatistics(path: string): Promise<Repository> {
     lastCommit: new Date(0),
     commits: [],
     tags: [],
-    readme: ''
+    readme: '',
   };
 
   const [
@@ -32,7 +32,7 @@ async function loadRepositoryStatistics(path: string): Promise<Repository> {
     commitCount,
     firstCommit,
     lastCommit,
-    readme
+    readme,
   ] = await Promise.all([
     executeCommand(base.path, `git remote`, getListData),
     executeCommand(base.path, `git branch`, getListData),
@@ -40,19 +40,19 @@ async function loadRepositoryStatistics(path: string): Promise<Repository> {
     executeCommand(
       base.path,
       `git log --reverse --format="%at" | head -1 | xargs -I{} date -d @{} +%Y-%m-%dT%H:%M:%S `,
-      stdout => parseISO(takeFirstStdOutputResponse(stdout))
+      (stdout) => parseISO(takeFirstStdOutputResponse(stdout))
     ),
     executeCommand(
       base.path,
       `git log -1 --format="%at" | xargs -I{} date -d @{} +%Y-%m-%dT%H:%M:%S`,
-      stdout => parseISO(takeFirstStdOutputResponse(stdout))
+      (stdout) => parseISO(takeFirstStdOutputResponse(stdout))
     ),
     new Promise<string>((resolve, reject) => {
       readFile(`${base.path}/README.md`, { encoding: 'UTF-8' }, (err, data) => {
         if (err) reject(err);
         resolve(data);
       });
-    })
+    }),
   ]);
   base.remotes = remotes;
   base.branches = branches;
@@ -73,7 +73,7 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
 
   useEffect(() => {
     if (!props.path) return;
-    const _ = loadRepositoryStatistics(props.path).then(repo => {
+    const _ = loadRepositoryStatistics(props.path).then((repo) => {
       setRepository(repo);
       return repo;
     });
@@ -160,7 +160,7 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
         <strong>Remotes</strong>
       </p>
       <ul>
-        {repository?.remotes.map(r => (
+        {repository?.remotes.map((r) => (
           <li key={r}>{r}</li>
         ))}
       </ul>
@@ -170,7 +170,7 @@ const RepositoryStatistics = (props: RepositoryStatisticsProps) => {
         <strong>Branches</strong>
       </p>
       <ul>
-        {repository?.branches.map(r => (
+        {repository?.branches.map((r) => (
           <li key={r}>{r}</li>
         ))}
       </ul>

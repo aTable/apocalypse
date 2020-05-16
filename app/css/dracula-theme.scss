@@ -17,10 +17,6 @@ body {
   color: $dracula-foreground;
 }
 
-div#tabs {
-  background-color: white !important;
-}
-
 table,
 pre {
   color: $dracula-foreground;
@@ -45,8 +41,30 @@ nav {
   }
 }
 
-/* bootstrap overrides */
-table,
-.table {
+table {
   color: $dracula-foreground !important;
+}
+
+/* toolbar */
+body > div > div:nth-child(1) {
+  & button {
+    color: $dracula-foreground;
+  }
+}
+
+/* tabs */
+body > div > div:nth-child(2) {
+  /* tab */
+  & > div {
+    & {
+      background-color: $dracula-current-line;
+    }
+    &:hover {
+      background-color: $dracula-comment;
+    }
+    &[data-state='active'] {
+      background-color: $dracula-foreground;
+      color: $dracula-background;
+    }
+  }
 }

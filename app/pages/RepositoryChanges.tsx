@@ -33,9 +33,6 @@ const RepositoryChangesPage = (
   const [selectedFile, setSelectedFile] = useState<GitStatusFile>();
   const [mode, setMode] = useState<FileMode>();
   const [diff, setDiff] = useState<FileDiff>();
-  const [linesForContext, setLinesForContext] = useState<number>(
-    appContext.state.linesForContext
-  );
   const [commitMessage, setCommitMessage] = useState('');
   const [isAmendCommit, setIsAmendCommit] = useState(false);
   const [isVerifyCommit, setIsVerifyCommit] = useState(true);
@@ -56,11 +53,20 @@ const RepositoryChangesPage = (
 
   useEffect(() => {
     if (!selectedFile) return;
-    getFileDiff(selectedFile.path, linesForContext, mode === FileMode.staged)
+    getFileDiff(
+      selectedFile.path,
+      appContext.state.linesForContext,
+      mode === FileMode.staged
+    )
       .then(setDiff)
       .catch(console.warn);
-  }, [selectedFile, linesForContext, mode]);
+  }, [selectedFile, appContext.state.linesForContext, mode]);
 
+  const linesForContextChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    appContext.dispatch({
+      type: 'SET_LINES_FOR_CONTEXT',
+      payload: e.target.valueAsNumber,
+    });
   const discardFileChanges = () => {
     if (!selectedFile) return;
     discardFile(selectedFile.path)
@@ -99,8 +105,8 @@ const RepositoryChangesPage = (
   };
 
   return (
-    <div className="container-fluid">
-      <div className="row">
+    <div className="container-fluid" style={{ height: 'inherit' }}>
+      <div className="row" style={{ height: 'inherit', overflowY: 'scroll' }}>
         <div className="col-2" style={{ flexGrow: 1 }}>
           <h1>Navbar</h1>
         </div>
@@ -193,8 +199,8 @@ const RepositoryChangesPage = (
           <input
             className="form-control"
             type="number"
-            value={linesForContext}
-            onChange={(e) => setLinesForContext(e.target.valueAsNumber)}
+            value={appContext.state.linesForContext}
+            onChange={linesForContextChange}
           />
 
           <div>

@@ -5,7 +5,6 @@ import App from './App';
 import './app.global.css';
 import './css/main.scss';
 import './css/dracula-theme.scss';
-
 // remember if you want to add vendor css to do so in ./app.global.css
 
 const AppContainer = process.env.PLAIN_HMR ? Fragment : ReactHotAppContainer;
