@@ -2,6 +2,22 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFile, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function getRemotes(repo: RepositoryLocation): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, `git remote`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
+export async function getBranches(repo: RepositoryLocation): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, `git branch`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
 export async function getUnpushedCommits(
   repo: RepositoryLocation
 ): Promise<string> {

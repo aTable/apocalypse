@@ -27,6 +27,7 @@ import TerminalContext from '../stores/TerminalContext';
 import { RepositoryLocation } from '../types/repositories';
 import { draculaGraphColors } from '../constants';
 import AppContext from '../stores/AppContext';
+import { getRemotes, getBranches } from '../utils/git-utils';
 
 export interface RepositoryPageProps {
   id: string;
@@ -70,8 +71,8 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
     });
     dispatch({ type: 'EXECUTE', payload: `cd ${repo.path}` });
 
-    executeCommand(repo.path, `git remote`, getListData).then(setRemotes);
-    executeCommand(repo.path, `git branch`, getListData).then(setBranches);
+    getRemotes(repo).then(getListData).then(setRemotes);
+    getBranches(repo).then(getListData).then(setBranches);
     executeCommand(repo.path, `git rev-list --all --count`, parseInt).then(
       setCommitCount
     );
@@ -186,183 +187,16 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
 
   return (
     <div className="container-fluid" style={{ height: 'inherit' }}>
-      <div className="row" style={{ height: 'inherit', overflowY: 'scroll' }}>
-        <div className="col-12">
-          <h1>{repo?.name}</h1>
-          <small>{repo?.path}</small>
-
-          <div
-            className="btn-toolbar"
-            role="toolbar"
-            aria-label="Toolbar with button groups"
-          >
-            <div
-              className="btn-group mr-2 btn-group-sm"
-              role="group"
-              aria-label="First group"
-            >
-              <button
-                className="btn btn-secondary btn-sm"
-                type="button"
-                onClick={openRepositoryFolder}
-              >
-                <i className="fa fa-folder" />
-              </button>
-              <button
-                className="btn btn-secondary btn-sm"
-                type="button"
-                onClick={openRepositoryShell}
-              >
-                <i className="fa fa-terminal" />
-              </button>
-            </div>
-            <div
-              className="btn-group mr-2 btn-group-sm"
-              role="group"
-              aria-label="Second group"
-            >
-              <button
-                className="btn btn-secondary btn-sm"
-                type="button"
-                onClick={goToRepositoryChanges}
-              >
-                <i className="fa fa-list" />
-              </button>
-              <button
-                className="btn btn-secondary btn-sm"
-                type="button"
-                onClick={goToRepositoryHistory}
-              >
-                <i className="fa fa-history" />
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <table className="table table-sm">
-            <tbody>
-              <tr>
-                <td>Commit count</td>
-                <td>{commitCount}</td>
-              </tr>
-              <tr>
-                <td>Last commit</td>
-                <td>{lastCommit ? format(lastCommit, 'PPpp') : ''}</td>
-              </tr>
-              <tr>
-                <td>First commit</td>
-                <td>{firstCommit ? format(firstCommit, 'PPpp') : ''}</td>
-              </tr>
-              <tr>
-                <td>Alive for</td>
-                <td>
-                  {firstCommit && lastCommit
-                    ? `${differenceInDays(lastCommit, firstCommit)} days`
-                    : ''}
-                </td>
-              </tr>
-              <tr>
-                <td>Commit count</td>
-                <td>{commitCount}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div className="col-md-6">
-          {contributions && (
-            <div style={{ width: '100%', height: 200 }}>
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    isAnimationActive={false}
-                    dataKey="count"
-                    nameKey="email"
-                    data={contributions.map((x, i) => ({
-                      ...x,
-                      fill: draculaGraphColors[i % draculaGraphColors.length],
-                    }))}
-                    fill="#82ca9d"
-                  />
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-        <div className="col-12">
-          <h2>Checklist</h2>
-          <p>
-            More information can be{' '}
-            <a href="https://opensource.guide/">found here</a>
-          </p>
+      <div className="row" style={{ height: 'inherit' }}>
+        <div
+          className="col-3"
+          style={{ height: 'inherit', overflowY: 'scroll' }}
+        >
+          <h2>Branches</h2>
           <ul>
-            <li>
-              {readme ? (
-                <span>
-                  <i className="text-success fa fa-check-circle" /> README.md
-                </span>
-              ) : (
-                <span>
-                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
-                  <a href="https://en.wikipedia.org/wiki/README">README.md</a>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={createReadme}
-                  >
-                    Create
-                  </button>
-                </span>
-              )}
-            </li>
-            <li>
-              {hasGitIgnore ? (
-                <span>
-                  <i className="text-success fa fa-check-circle" /> .gitignore
-                </span>
-              ) : (
-                <span>
-                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
-                  <a href="https://git-scm.com/docs/gitignore">.gitignore</a>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={createGitIgnore}
-                  >
-                    Create
-                  </button>
-                </span>
-              )}
-            </li>
-            <li>
-              {hasEditorConfig ? (
-                <span>
-                  <i className="text-success fa fa-check-circle" />{' '}
-                  .editorconfig
-                </span>
-              ) : (
-                <span>
-                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
-                  <a href="https://editorconfig.org/">.editorconfig</a>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={createEditorConfig}
-                  >
-                    Create
-                  </button>
-                </span>
-              )}
-            </li>
-            <li>
-              {hasLicense ? (
-                <span>
-                  <i className="text-success fa fa-check-circle" /> LICENSE
-                </span>
-              ) : (
-                <span>
-                  <i className="text-warning fa fa-times-circle" /> Missing{' '}
-                  <a href="https://choosealicense.com/">LICENSE</a>
-                </span>
-              )}
-            </li>
+            {branches?.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
           </ul>
           <hr />
 
@@ -373,24 +207,200 @@ const RepositoryPage = (props: RouteComponentProps<RepositoryPageProps>) => {
             ))}
           </ul>
           <hr />
+        </div>
+        <div
+          className="col-9"
+          style={{ height: 'inherit', overflowY: 'scroll' }}
+        >
+          <div className="col-12">
+            <h1>{repo?.name}</h1>
+            <small>{repo?.path}</small>
 
-          <h2>Branches</h2>
-          <ul>
-            {branches?.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-          <hr />
+            <div
+              className="btn-toolbar"
+              role="toolbar"
+              aria-label="Toolbar with button groups"
+            >
+              <div
+                className="btn-group mr-2 btn-group-sm"
+                role="group"
+                aria-label="First group"
+              >
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={openRepositoryFolder}
+                >
+                  <i className="fa fa-folder" />
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={openRepositoryShell}
+                >
+                  <i className="fa fa-terminal" />
+                </button>
+              </div>
+              <div
+                className="btn-group mr-2 btn-group-sm"
+                role="group"
+                aria-label="Second group"
+              >
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={goToRepositoryChanges}
+                >
+                  <i className="fa fa-list" />
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={goToRepositoryHistory}
+                >
+                  <i className="fa fa-history" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <table className="table table-sm">
+              <tbody>
+                <tr>
+                  <td>Commit count</td>
+                  <td>{commitCount}</td>
+                </tr>
+                <tr>
+                  <td>Last commit</td>
+                  <td>{lastCommit ? format(lastCommit, 'PPpp') : ''}</td>
+                </tr>
+                <tr>
+                  <td>First commit</td>
+                  <td>{firstCommit ? format(firstCommit, 'PPpp') : ''}</td>
+                </tr>
+                <tr>
+                  <td>Alive for</td>
+                  <td>
+                    {firstCommit && lastCommit
+                      ? `${differenceInDays(lastCommit, firstCommit)} days`
+                      : ''}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Commit count</td>
+                  <td>{commitCount}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="col-md-6">
+            {contributions && (
+              <div style={{ width: '100%', height: 200 }}>
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      isAnimationActive={false}
+                      dataKey="count"
+                      nameKey="email"
+                      data={contributions.map((x, i) => ({
+                        ...x,
+                        fill: draculaGraphColors[i % draculaGraphColors.length],
+                      }))}
+                      fill="#82ca9d"
+                    />
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+          <div className="col-12">
+            <h2>Checklist</h2>
+            <p>
+              More information can be{' '}
+              <a href="https://opensource.guide/">found here</a>
+            </p>
+            <ul>
+              <li>
+                {readme ? (
+                  <span>
+                    <i className="text-success fa fa-check-circle" /> README.md
+                  </span>
+                ) : (
+                  <span>
+                    <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                    <a href="https://en.wikipedia.org/wiki/README">README.md</a>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={createReadme}
+                    >
+                      Create
+                    </button>
+                  </span>
+                )}
+              </li>
+              <li>
+                {hasGitIgnore ? (
+                  <span>
+                    <i className="text-success fa fa-check-circle" /> .gitignore
+                  </span>
+                ) : (
+                  <span>
+                    <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                    <a href="https://git-scm.com/docs/gitignore">.gitignore</a>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={createGitIgnore}
+                    >
+                      Create
+                    </button>
+                  </span>
+                )}
+              </li>
+              <li>
+                {hasEditorConfig ? (
+                  <span>
+                    <i className="text-success fa fa-check-circle" />{' '}
+                    .editorconfig
+                  </span>
+                ) : (
+                  <span>
+                    <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                    <a href="https://editorconfig.org/">.editorconfig</a>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={createEditorConfig}
+                    >
+                      Create
+                    </button>
+                  </span>
+                )}
+              </li>
+              <li>
+                {hasLicense ? (
+                  <span>
+                    <i className="text-success fa fa-check-circle" /> LICENSE
+                  </span>
+                ) : (
+                  <span>
+                    <i className="text-warning fa fa-times-circle" /> Missing{' '}
+                    <a href="https://choosealicense.com/">LICENSE</a>
+                  </span>
+                )}
+              </li>
+            </ul>
+            <hr />
 
-          <h2>README</h2>
-          {!readme && <p>No README.md</p>}
-          {readme && (
-            <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
-              {readme}
-            </pre>
-          )}
+            <h2>README</h2>
+            {!readme && <p>No README.md</p>}
+            {readme && (
+              <pre style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+                {readme}
+              </pre>
+            )}
 
-          <hr />
+            <hr />
+          </div>
         </div>
       </div>
     </div>
