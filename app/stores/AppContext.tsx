@@ -22,6 +22,7 @@ export interface AppContext {
   linesForContext: number;
   openTabs: RepositoryLocation[];
   currentTab?: RepositoryLocation;
+  isFetchAllRemotes: boolean;
 }
 
 export interface AppActions {
@@ -31,7 +32,8 @@ export interface AppActions {
     | 'OPEN_TAB'
     | 'CLOSE_TAB'
     | 'LOAD_CONFIG'
-    | 'SET_LINES_FOR_CONTEXT';
+    | 'SET_LINES_FOR_CONTEXT'
+    | 'SET_FETCH_ALL_REMOTES';
 }
 
 export const reducer = (state: AppContext, action: AppActions): AppContext => {
@@ -65,6 +67,12 @@ export const reducer = (state: AppContext, action: AppActions): AppContext => {
         linesForContext: action.payload,
       };
     }
+    case 'SET_FETCH_ALL_REMOTES': {
+      return {
+        ...state,
+        isFetchAllRemotes: action.payload,
+      };
+    }
     case 'LOAD_CONFIG': {
       return {
         ...state,
@@ -90,6 +98,8 @@ const defaults: AppContext = {
   serverUri: 'https://localhost',
   linesForContext: 5,
   openTabs: [],
+  currentTab: undefined,
+  isFetchAllRemotes: true,
 };
 
 function initializer(init: AppContext): AppContext {

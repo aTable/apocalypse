@@ -15,6 +15,9 @@ const NavBar: FC<NavBarProps> = () => {
       <button className="btn">Fetch</button>
       <button className="btn">Pull</button>
       <button className="btn">Push</button>
+      <button className="btn" onClick={() => history.push(`/settings`)}>
+        Settings
+      </button>
     </div>
   );
 };

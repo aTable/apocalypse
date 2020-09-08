@@ -2,6 +2,27 @@ import { RepositoryLocation } from '../types/repositories';
 import { GitStatusFile, XY, FileDiff, FileDiffHunk } from '../types/git';
 import { executeCommand, executeCommandRaw } from './utils';
 
+export async function getRemoteBranches2(
+  repo: RepositoryLocation,
+  remote: string
+): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, `git ls-remote --heads ${remote}`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
+export async function getRemoteBranches(
+  repo: RepositoryLocation
+): Promise<string> {
+  return new Promise((resolve) => {
+    executeCommand(repo.path, `git branch --remotes`, (res) => {
+      resolve(res);
+    });
+  });
+}
+
 export async function getRemotes(repo: RepositoryLocation): Promise<string> {
   return new Promise((resolve) => {
     executeCommand(repo.path, `git remote`, (res) => {
@@ -65,7 +86,7 @@ export async function getRepositoryHistory(
   repo: RepositoryLocation
 ): Promise<string[]> {
   return new Promise((resolve) => {
-    executeCommand(repo.path, 'git log --oneline', (res) => {
+    executeCommand(repo.path, 'git log --graph --oneline', (res) => {
       const mapped = res.split('\n').filter((x) => x);
       resolve(mapped);
     });

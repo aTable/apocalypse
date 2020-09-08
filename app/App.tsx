@@ -11,6 +11,7 @@ import { AuthContextProvider } from './stores/AuthContext';
 import { TerminalContextProvider } from './stores/TerminalContext';
 import { AppContextProvider } from './stores/AppContext';
 import styles from './css/main.scss';
+import Settings from './pages/Settings';
 
 interface AppProps {
   _?: string;
@@ -36,6 +37,9 @@ const App: FC<AppProps> = () => {
                 />
                 <Route path="/repositories/:id" component={Repository} />
                 <Route path="/repositories" component={Repositories} />
+
+                <Route path="/settings" component={Settings} />
+
                 <Route path="/" component={Repositories} />
               </Switch>
             </div>
